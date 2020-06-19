@@ -1,6 +1,6 @@
 using Report.Domain.Models;
 
-namespace Report.Data.Repositories
+namespace Report.Domain.Repositories
 {
     public interface ILogRepository : IBaseRepository<Log>
     {

@@ -1,7 +1,8 @@
-using Report.Data.Context;
 using Report.Domain.Models;
+using Report.Domain.Repositories;
+using Report.Infra.Contexts;
 
-namespace Report.Data.Repositories
+namespace Report.Infra.Repositories
 {
     public class LogRepository : BaseRepository<Log>, ILogRepository
     {

@@ -1,13 +1,14 @@
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Report.Data.Repositories;
+using Report.Api.Authorization;
 using Report.Domain.Commands;
 using Report.Domain.Enums;
 using Report.Domain.Models;
-using Report.Domain.Entities;
+using Report.Domain.Repositories;
 
-namespace Report.Controllers
+namespace Report.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
@@ -21,6 +22,7 @@ namespace Report.Controllers
         }
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Get()
         {
             try
@@ -35,6 +37,7 @@ namespace Report.Controllers
         }
 
         [HttpGet("{logId}")]
+        [Authorize]
         public async Task<IActionResult> GetLogById(int logId)
         {
             try
@@ -49,6 +52,7 @@ namespace Report.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> Post(CreateLogCommand command)
         {
             try
@@ -80,6 +84,7 @@ namespace Report.Controllers
         }
 
         [HttpPut("{logId}")]
+        [Authorize]
         public async Task<IActionResult> Put(int logId, CreateLogCommand command)
         {
             try
@@ -111,6 +116,7 @@ namespace Report.Controllers
         }
 
         [HttpDelete("{logId}")]
+        [AuthorizeUserRoles(EUserRole.MANAGER)]
         public async Task<IActionResult> Delete(int logId)
         {
             try

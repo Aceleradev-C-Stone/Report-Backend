@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Report.Data.Context;
+using Report.Domain.Repositories;
+using Report.Infra.Contexts;
 
-namespace Report.Data.Repositories
+namespace Report.Infra.Repositories
 {
     public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
     {

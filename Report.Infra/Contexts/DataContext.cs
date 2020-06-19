@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Report.Data.Context.Configurations;
+using Report.Infra.Contexts.Configurations;
 using Report.Domain.Models;
 
-namespace Report.Data.Context
+namespace Report.Infra.Contexts
 {
     public class DataContext : DbContext
     {

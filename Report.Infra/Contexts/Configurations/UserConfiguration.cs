@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Report.Domain.Models;
 
-namespace Report.Data.Context.Configurations
+namespace Report.Infra.Contexts.Configurations
 {
     public class UserConfiguration : IEntityTypeConfiguration<User>
     {

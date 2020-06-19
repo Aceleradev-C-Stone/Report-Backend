@@ -1,13 +1,16 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Report.Data.Repositories;
 using Report.Domain.Commands;
-using Report.Domain.Enums;
 using Report.Domain.Models;
 using Report.Domain.Entities;
+using Report.Domain.Repositories;
+using Report.Api.Authorization;
+using Report.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
+using Report.Infra.Services;
 
-namespace Report.Controllers
+namespace Report.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
@@ -21,6 +24,7 @@ namespace Report.Controllers
         }
 
         [HttpGet]
+        [AuthorizeUserRoles(EUserRole.MANAGER)]
         public async Task<IActionResult> Get()
         {
             try
@@ -35,6 +39,7 @@ namespace Report.Controllers
         }
 
         [HttpGet("{userId}")]
+        [AuthorizeUserRoles(EUserRole.MANAGER)]
         public async Task<IActionResult> GetUserById(int userId)
         {
             try
@@ -49,6 +54,7 @@ namespace Report.Controllers
         }
 
         [HttpPost]
+        [AuthorizeUserRoles(EUserRole.MANAGER)]
         public async Task<IActionResult> Post(CreateUserCommand command)
         {
             try
@@ -76,6 +82,7 @@ namespace Report.Controllers
         }
 
         [HttpPut("{userId}")]
+        [AuthorizeUserRoles(EUserRole.MANAGER)]
         public async Task<IActionResult> Put(int userId, CreateUserCommand command)
         {
             try
@@ -106,6 +113,7 @@ namespace Report.Controllers
         }
 
         [HttpDelete("{userId}")]
+        [AuthorizeUserRoles(EUserRole.MANAGER)]
         public async Task<IActionResult> Delete(int userId)
         {
             try
@@ -129,7 +137,10 @@ namespace Report.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Authenticate(LoginUserCommand command)
+        [AllowAnonymous]
+        public async Task<IActionResult> Authenticate(
+            [FromServices]ITokenService tokenService,
+            LoginUserCommand command)
         {
             try
             {
@@ -141,10 +152,12 @@ namespace Report.Controllers
                 if (!SaltedHash.AreEqual(command.Password, user.Hash, user.Salt))
                     return StatusCode(403, new { message = "Email ou senha incorretos" });
 
+                var token = tokenService.GenerateToken(user);
+
                 user.Hash = "";
                 user.Salt = "";
 
-                return Ok(user);
+                return Ok(new { user = user, token = token });
             }
             catch (Exception ex)
             {
