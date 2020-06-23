@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Report.Domain.Repositories;
@@ -30,9 +29,11 @@ namespace Report.Infra.Repositories
             _dbContext.Remove(entity);
         }
 
-        public async Task<IList<TEntity>> GetAll()
+        public async Task<TEntity[]> GetAll()
         {
-            return await _dbContext.Set<TEntity>().ToListAsync();
+            return await _dbContext.Set<TEntity>()
+                                   .AsNoTracking()
+                                   .ToArrayAsync();
         }
 
         public async Task<TEntity> GetById(int id)

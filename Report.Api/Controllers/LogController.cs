@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Report.Api.Authorization;
-using Report.Domain.Commands;
+using Report.Api.Dto.Requests;
+using Report.Api.Dto.Responses;
 using Report.Domain.Enums;
 using Report.Domain.Models;
 using Report.Domain.Repositories;
@@ -14,10 +18,12 @@ namespace Report.Api.Controllers
     [Route("api/v1/[controller]")]
     public class LogController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly ILogRepository _repository;
 
-        public LogController(ILogRepository repository)
+        public LogController(IMapper mapper, ILogRepository repository)
         {
+            _mapper = mapper;
             _repository = repository;
         }
 
@@ -27,8 +33,25 @@ namespace Report.Api.Controllers
         {
             try
             {
-                var result = await _repository.GetAll();
-                return Ok(result);
+                var logs = await _repository.GetAll();
+                var response = _mapper.Map<LogResponse[]>(logs);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: { ex.Message }");
+            }
+        }
+
+        [HttpGet("user/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetLogsByUserId(int userId)
+        {
+            try
+            {
+                var logs = await _repository.GetAllByUserId(userId);
+                var response = _mapper.Map<LogResponse[]>(logs);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -42,8 +65,9 @@ namespace Report.Api.Controllers
         {
             try
             {
-                var result = await _repository.GetById(logId);
-                return Ok(result);
+                var log = await _repository.GetById(logId);
+                var response = _mapper.Map<LogResponse>(log);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -53,63 +77,55 @@ namespace Report.Api.Controllers
 
         [HttpPost]
         [Authorize]
-        public async Task<IActionResult> Post(CreateLogCommand command)
+        public async Task<IActionResult> Post(CreateLogRequest request)
         {
             try
             {
-                var log = new Log()
-                {
-                    Description = command.Description,
-                    Title       = command.Title,
-                    Details     = command.Details,
-                    Source      = command.Source,
-                    EventCount  = command.EventCount,
-                    Level       = command.Level,
-                    Channel     = command.Channel,
-                    CreatedAt   = DateTime.Now,
-                    UserId      = 1
-                };
+                int userId;
+                var nameIdentifier = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+                if (!int.TryParse(nameIdentifier, out userId))
+                    return BadRequest(new { message = "Erro ao obter o Id do usuário" });
 
+                var log = mapCreateLogRequestToLog(userId, request);
                 _repository.Add(log);
 
                 if (await _repository.SaveChangesAsync())
+                {
+                    var response = _mapper.Map<LogResponse>(log);
                     return Ok(log);
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
 
             return BadRequest();
         }
 
         [HttpPut("{logId}")]
-        [Authorize]
-        public async Task<IActionResult> Put(int logId, CreateLogCommand command)
+        [AuthorizeUserRoles(EUserRole.MANAGER)]
+        public async Task<IActionResult> Put(int logId, UpdateLogRequest request)
         {
             try
             {
                 var log = await _repository.GetById(logId);
 
-                if (log == null)
-                    return NotFound("Log não encontrado");
+                if (log.Equals(null))
+                    return NotFound(new { message = "Log não encontrado" });
 
-                log.Description = command.Description;
-                log.Title       = command.Title;
-                log.Details     = command.Details;
-                log.Source      = command.Source;
-                log.EventCount  = command.EventCount;
-                log.Level       = command.Level;
-                log.Channel     = command.Channel;
-
+                log = mapUpdateLogRequestToLog(log, request);
                 _repository.Update(log);
 
                 if (await _repository.SaveChangesAsync())
-                    return Ok(log);
+                {
+                    var response = _mapper.Map<LogResponse>(log);
+                    return Ok(response);
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
 
             return BadRequest();
@@ -123,20 +139,40 @@ namespace Report.Api.Controllers
             {
                 var log = await _repository.GetById(logId);
                 
-                if (log == null)
-                    return NotFound("Log não encontrado");
+                if (log.Equals(null))
+                    return NotFound(new { message = "Log não encontrado" });
                 
                 _repository.Delete(log);
 
                 if (await _repository.SaveChangesAsync())
-                    return Ok("Log deletado");
+                    return Ok(new { message = "Log deletado" });
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
 
             return BadRequest();
+        }
+
+        private Log mapCreateLogRequestToLog(int userId, CreateLogRequest request)
+        {
+            var log = _mapper.Map<Log>(request);
+            log.CreatedAt = DateTime.Now;
+            log.UserId = userId;
+            return log;
+        }
+
+        private Log mapUpdateLogRequestToLog(Log log, UpdateLogRequest request)
+        {
+            log.Description = request.Description;
+            log.Title       = request.Title;
+            log.Details     = request.Details;
+            log.Source      = request.Source;
+            log.EventCount  = request.EventCount;
+            log.Level       = request.Level;
+            log.Channel     = request.Channel;
+            return log;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace Report.Domain.Repositories
         void Add(TEntity entity);
         void Update(TEntity entity);
         void Delete(TEntity entity);
-        Task<IList<TEntity>> GetAll();
+        Task<TEntity[]> GetAll();
         Task<TEntity> GetById(int id);
         Task<bool> SaveChangesAsync();
     }

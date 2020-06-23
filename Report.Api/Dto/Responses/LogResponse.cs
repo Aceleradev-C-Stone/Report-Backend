@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Generic;
 using Report.Domain.Enums;
 
-namespace Report.Domain.Models
+namespace Report.Api.Dto.Responses
 {
-    public class Log
-    {   
-        public int Id { get; set; }
+    public class LogResponse
+    {
+        public int Id { get; private set; }
         public string Description { get; set; }
         public string Title { get; set; }
         public string Details { get; set; }
@@ -15,8 +14,6 @@ namespace Report.Domain.Models
         public ELogLevel Level { get; set; }
         public ELogChannel Channel { get; set; }
         public DateTime CreatedAt { get; set; }
-
         public int UserId { get; set; }
-        public User User { get; private set; }
     }
 }

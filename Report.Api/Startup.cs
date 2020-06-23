@@ -1,4 +1,5 @@
 using System.Text;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -7,10 +8,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Report.Api.Mappers;
 using Report.Domain.Repositories;
 using Report.Infra.Contexts;
 using Report.Infra.Repositories;
 using Report.Infra.Services;
+using Report.Infra.Services.Hash;
 
 namespace Report.Api
 {
@@ -55,8 +58,11 @@ namespace Report.Api
                 };
             });
 
+            services.AddAutoMapper(typeof(UserProfile));
+
             services.AddSingleton<IConfiguration>(Configuration);
 
+            services.AddSingleton<IHashService, HashService>();
             services.AddSingleton<ITokenService, TokenService>();
 
             services.AddScoped<IUserRepository, UserRepository>();
@@ -70,7 +76,7 @@ namespace Report.Api
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.UseRouting();
 

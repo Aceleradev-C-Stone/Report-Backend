@@ -14,7 +14,8 @@ namespace Report.Infra.Repositories
         Task<User> IUserRepository.GetByEmail(string email)
         {
             return _dbContext.Set<User>()
-                        .FirstOrDefaultAsync(u => u.Email == email);
+                             .AsNoTracking()
+                             .FirstOrDefaultAsync(user => user.Email == email);
         }
     }
 }

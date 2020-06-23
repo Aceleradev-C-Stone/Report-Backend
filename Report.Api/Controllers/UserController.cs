@@ -1,14 +1,15 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Report.Domain.Commands;
 using Report.Domain.Models;
-using Report.Domain.Entities;
 using Report.Domain.Repositories;
 using Report.Api.Authorization;
 using Report.Domain.Enums;
-using Microsoft.AspNetCore.Authorization;
-using Report.Infra.Services;
+using Report.Infra.Services.Hash;
+using System.Collections.Generic;
+using AutoMapper;
+using Report.Api.Dto.Responses;
+using Report.Api.Dto.Requests;
 
 namespace Report.Api.Controllers
 {
@@ -16,10 +17,12 @@ namespace Report.Api.Controllers
     [Route("api/v1/[controller]")]
     public class UserController : ControllerBase
     {
+        private readonly IMapper _mapper;
         private readonly IUserRepository _repository;
 
-        public UserController(IUserRepository repository)
+        public UserController(IMapper mapper, IUserRepository repository)
         {
+            _mapper = mapper;
             _repository = repository;
         }
 
@@ -29,12 +32,13 @@ namespace Report.Api.Controllers
         {
             try
             {
-                var result = await _repository.GetAll();
-                return Ok(result);
+                var users = await _repository.GetAll();
+                var response = _mapper.Map<UserResponse[]>(users);
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
         }
 
@@ -44,38 +48,48 @@ namespace Report.Api.Controllers
         {
             try
             {
-                var result = await _repository.GetById(userId);
-                return Ok(result);
+                var user = await _repository.GetById(userId);
+                var response = _mapper.Map<UserResponse>(user);
+                return Ok(response);
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
         }
 
         [HttpPost]
         [AuthorizeUserRoles(EUserRole.MANAGER)]
-        public async Task<IActionResult> Post(CreateUserCommand command)
+        public async Task<IActionResult> Post(
+            [FromServices]IHashService hashService,
+            CreateUserRequest request)
         {
             try
             {
-                var user = new User();
-                user.Name = command.Name;
-                user.Email = command.Email;
-                user.CreatedAt = DateTime.Now;
+                var user = _mapper.Map<User>(request);
+                var found = await _repository.GetByEmail(user.Email);
 
-                var saltedHash = SaltedHash.Generate(command.Password);
+                if (found != null)
+                    return Conflict(new { message = "Esse email já está sendo utilizado." });
+
+                var saltedHash = hashService.GenerateSaltedHash(request.Password);
                 user.Salt = saltedHash.Salt;
                 user.Hash = saltedHash.Hash;
+
+                user.Role = EUserRole.DEVELOPER;
+                user.CreatedAt = DateTime.Now;
 
                 _repository.Add(user);
                 
                 if (await _repository.SaveChangesAsync())
-                    return Ok(user);
+                {
+                    var response = _mapper.Map<UserResponse>(user);
+                    return Ok(response);
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
 
             return BadRequest();
@@ -83,30 +97,35 @@ namespace Report.Api.Controllers
 
         [HttpPut("{userId}")]
         [AuthorizeUserRoles(EUserRole.MANAGER)]
-        public async Task<IActionResult> Put(int userId, CreateUserCommand command)
+        public async Task<IActionResult> Put(
+            [FromServices]IHashService hashService,
+            int userId,
+            UpdateUserRequest request)
         {
             try
             {
                 var user = await _repository.GetById(userId);
 
-                if (user == null)
-                    return NotFound("Usuário não encontrado");
+                if (user.Equals(null))
+                    return NotFound(new { message = "Usuário não encontrado" });
 
-                user.Name  = command.Name;
-                user.Email = command.Email;
+                user.Name  = request.Name;
                 
-                var saltedHash = SaltedHash.Generate(command.Password);
+                var saltedHash = hashService.GenerateSaltedHash(request.Password);
                 user.Salt = saltedHash.Salt;
                 user.Hash = saltedHash.Hash;
                 
                 _repository.Update(user);
 
                 if (await _repository.SaveChangesAsync())
-                    return Ok(user);
+                {
+                    var response = _mapper.Map<UserResponse>(user);
+                    return Ok(response);
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
 
             return BadRequest();
@@ -120,49 +139,20 @@ namespace Report.Api.Controllers
             {
                 var user = await _repository.GetById(userId);
                 
-                if (user == null)
-                    return NotFound("Usuário não encontrado");
+                if (user.Equals(null))
+                    return NotFound(new { message = "Usuário não encontrado" });
                 
                 _repository.Delete(user);
 
                 if (await _repository.SaveChangesAsync())
-                    return Ok("Usuário deletado");
+                    return Ok(new { message = "Usuário deletado" });
             }
             catch (Exception ex)
             {
-                return BadRequest($"Erro: { ex.Message }");
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
             }
 
             return BadRequest();
-        }
-
-        [HttpPost("login")]
-        [AllowAnonymous]
-        public async Task<IActionResult> Authenticate(
-            [FromServices]ITokenService tokenService,
-            LoginUserCommand command)
-        {
-            try
-            {
-                var user = await _repository.GetByEmail(command.Email);
-                
-                if (user == null)
-                    return NotFound(new { message = "Usuário não encontrado" });
-
-                if (!SaltedHash.AreEqual(command.Password, user.Hash, user.Salt))
-                    return StatusCode(403, new { message = "Email ou senha incorretos" });
-
-                var token = tokenService.GenerateToken(user);
-
-                user.Hash = "";
-                user.Salt = "";
-
-                return Ok(new { user = user, token = token });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Erro: { ex.Message }");
-            }
-        }
+        }   
     }
 }
