@@ -5,7 +5,7 @@ namespace Report.Api.Dto.Responses
 {
     public class LogResponse
     {
-        public int Id { get; private set; }
+        public int Id { get; set; }
         public string Description { get; set; }
         public string Title { get; set; }
         public string Details { get; set; }
@@ -15,5 +15,6 @@ namespace Report.Api.Dto.Responses
         public ELogChannel Channel { get; set; }
         public DateTime CreatedAt { get; set; }
         public int UserId { get; set; }
+        public string UserName { get; set; }
     }
 }

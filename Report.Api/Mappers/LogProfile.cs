@@ -9,7 +9,8 @@ namespace Report.Api.Mappers
     {
         public LogProfile()
         {
-            CreateMap<Log, LogResponse>();
+            CreateMap<Log, LogResponse>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
             CreateMap<CreateLogRequest, Log>();
             CreateMap<UpdateLogRequest, Log>();
         }

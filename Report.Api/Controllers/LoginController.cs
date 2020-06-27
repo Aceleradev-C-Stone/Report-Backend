@@ -44,6 +44,7 @@ namespace Report.Api.Controllers
                 var response = new LoginUserResponse();
                 response.User = _mapper.Map<UserResponse>(user);
                 response.Token = tokenService.GenerateToken(user);
+                response.ExpiresIn = tokenService.GetExpirationInSeconds();
                 
                 return Ok(response);
             }
