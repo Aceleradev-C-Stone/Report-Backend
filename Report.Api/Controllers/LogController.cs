@@ -81,10 +81,7 @@ namespace Report.Api.Controllers
         {
             try
             {
-                int userId;
-                var nameIdentifier = User.FindFirst(ClaimTypes.NameIdentifier).Value;
-                if (!int.TryParse(nameIdentifier, out userId))
-                    return BadRequest(new { message = "Erro ao obter o Id do usuário" });
+                int userId = getLoggedUserId();
 
                 var log = mapCreateLogRequestToLog(userId, request);
                 _repository.Add(log);
@@ -104,15 +101,17 @@ namespace Report.Api.Controllers
         }
 
         [HttpPut("{logId}")]
-        [AuthorizeUserRoles(EUserRole.MANAGER)]
+        [Authorize]
         public async Task<IActionResult> Put(int logId, UpdateLogRequest request)
         {
             try
             {
                 var log = await _repository.GetById(logId);
 
-                if (log.Equals(null))
-                    return NotFound(new { message = "Log não encontrado" });
+                var userId = getLoggedUserId();
+                if (!log.UserId.Equals(userId))
+                    return StatusCode(403,
+                        new { message = "Não é possível atualizar um log de outro usuário" });
 
                 log = mapUpdateLogRequestToLog(log, request);
                 _repository.Update(log);
@@ -123,6 +122,10 @@ namespace Report.Api.Controllers
                     return Ok(response);
                 }
             }
+            catch (NullReferenceException)
+            {
+                return NotFound(new { message = "Log não encontrado" });
+            }
             catch (Exception ex)
             {
                 return BadRequest(new { message = $"Erro: { ex.Message }" });
@@ -132,15 +135,20 @@ namespace Report.Api.Controllers
         }
 
         [HttpDelete("{logId}")]
-        [AuthorizeUserRoles(EUserRole.MANAGER)]
+        [Authorize]
         public async Task<IActionResult> Delete(int logId)
         {
             try
             {
                 var log = await _repository.GetById(logId);
-                
+
                 if (log.Equals(null))
                     return NotFound(new { message = "Log não encontrado" });
+
+                var userId = getLoggedUserId();
+                if (!log.UserId.Equals(userId))
+                    return StatusCode(403,
+                        new { message = "Não é possível deletar um log de outro usuário" });
                 
                 _repository.Delete(log);
 
@@ -173,6 +181,11 @@ namespace Report.Api.Controllers
             log.Level       = request.Level;
             log.Channel     = request.Channel;
             return log;
+        }
+
+        private int getLoggedUserId() {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            return int.Parse(userId);
         }
     }
 }
