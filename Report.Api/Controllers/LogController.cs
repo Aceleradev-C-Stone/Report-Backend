@@ -49,7 +49,54 @@ namespace Report.Api.Controllers
         {
             try
             {
+                var loggedUserId = getLoggedUserId();
+                if (!userId.Equals(loggedUserId))
+                    return StatusCode(403,
+                        new { message = "Não é possível obter logs de outro usuário" });
+
                 var logs = await _repository.GetAllByUserId(userId);
+                var response = _mapper.Map<LogResponse[]>(logs);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: { ex.Message }");
+            }
+        }
+
+        [HttpGet("unarchived/user/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetUnarchivedLogsByUserId(int userId)
+        {
+            try
+            {
+                var loggedUserId = getLoggedUserId();
+                if (!userId.Equals(loggedUserId))
+                    return StatusCode(403,
+                        new { message = "Não é possível obter logs de outro usuário" });
+
+                var logs = await _repository.GetAllUnarchivedByUserId(userId);
+                var response = _mapper.Map<LogResponse[]>(logs);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Erro: { ex.Message }");
+            }
+        }
+
+        [HttpGet("archived/user/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> GetArchivedLogsByUserId(int userId)
+        {
+            try
+            {
+                var loggedUserId = getLoggedUserId();
+                if (!userId.Equals(loggedUserId))
+                    return StatusCode(403,
+                        new { message = "Não é possível obter logs de outro usuário" });
+
+                var logs = await _repository.GetAllArchivedByUserId(userId);
                 var response = _mapper.Map<LogResponse[]>(logs);
                 return Ok(response);
             }
@@ -66,6 +113,12 @@ namespace Report.Api.Controllers
             try
             {
                 var log = await _repository.GetById(logId);
+
+                var userId = getLoggedUserId();
+                if (!log.UserId.Equals(userId))
+                    return StatusCode(403,
+                        new { message = "Não é possível obter logs de outro usuário" });
+
                 var response = _mapper.Map<LogResponse>(log);
                 return Ok(response);
             }
@@ -163,11 +216,47 @@ namespace Report.Api.Controllers
             return BadRequest();
         }
 
+        [HttpPatch("archive/{logId}")]
+        [Authorize]
+        public async Task<IActionResult> Archive(int logId)
+        {
+            try
+            {
+                var log = await _repository.GetById(logId);
+
+                var userId = getLoggedUserId();
+                if (!log.UserId.Equals(userId))
+                    return StatusCode(403, new {
+                        message = "Não é possível arquivar ou desarquivar um log de outro usuário"
+                    });
+
+                log.Archived = !log.Archived;
+                _repository.Update(log);
+
+                if (await _repository.SaveChangesAsync())
+                {
+                    var response = _mapper.Map<LogResponse>(log);
+                    return Ok(response);
+                }
+            }
+            catch (NullReferenceException)
+            {
+                return NotFound(new { message = "Log não encontrado" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = $"Erro: { ex.Message }" });
+            }
+
+            return BadRequest();
+        }
+
         private Log mapCreateLogRequestToLog(int userId, CreateLogRequest request)
         {
             var log = _mapper.Map<Log>(request);
-            log.CreatedAt = DateTime.Now;
             log.UserId = userId;
+            log.Archived = false;
+            log.CreatedAt = DateTime.Now;
             return log;
         }
 
@@ -183,7 +272,8 @@ namespace Report.Api.Controllers
             return log;
         }
 
-        private int getLoggedUserId() {
+        private int getLoggedUserId()
+        {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             return int.Parse(userId);
         }

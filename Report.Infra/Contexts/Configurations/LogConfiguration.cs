@@ -43,6 +43,10 @@ namespace Report.Infra.Contexts.Configurations
 
             builder.Property(log => log.CreatedAt)
                    .IsRequired();
+
+            builder.Property(log => log.Archived)
+                   .HasDefaultValue(false)
+                   .IsRequired();
         }
     }
 }

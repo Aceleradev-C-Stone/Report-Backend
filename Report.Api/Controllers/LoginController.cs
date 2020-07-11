@@ -34,9 +34,6 @@ namespace Report.Api.Controllers
             try
             {
                 var user = await _repository.GetByEmail(request.Email);
-                
-                if (user.Equals(null))
-                    return NotFound(new { message = "Usuário não encontrado" });
 
                 if (!hashService.AreEqual(request.Password, user.Hash, user.Salt))
                     return StatusCode(403, new { message = "Email ou senha incorretos" });
@@ -47,6 +44,10 @@ namespace Report.Api.Controllers
                 response.ExpiresIn = tokenService.GetExpirationInSeconds();
                 
                 return Ok(response);
+            }
+            catch (NullReferenceException)
+            {
+                return NotFound(new { message = "Usuário não encontrado" });
             }
             catch (Exception ex)
             {

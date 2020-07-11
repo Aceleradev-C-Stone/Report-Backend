@@ -15,6 +15,7 @@ namespace Report.Domain.Models
         public ELogLevel Level { get; set; }
         public ELogChannel Channel { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool Archived { get; set; }
 
         public int UserId { get; set; }
         public User User { get; private set; }

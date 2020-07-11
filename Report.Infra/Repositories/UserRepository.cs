@@ -11,7 +11,7 @@ namespace Report.Infra.Repositories
     {
         public UserRepository(DataContext context) : base(context) {}
 
-        Task<User> IUserRepository.GetByEmail(string email)
+        public Task<User> GetByEmail(string email)
         {
             return _dbContext.Set<User>()
                              .AsNoTracking()

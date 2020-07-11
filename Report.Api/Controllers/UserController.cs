@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using AutoMapper;
 using Report.Api.Dto.Responses;
 using Report.Api.Dto.Requests;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Report.Api.Controllers
 {
@@ -96,7 +98,7 @@ namespace Report.Api.Controllers
         }
 
         [HttpPut("{userId}")]
-        [AuthorizeUserRoles(EUserRole.MANAGER)]
+        [Authorize]
         public async Task<IActionResult> Put(
             [FromServices]IHashService hashService,
             int userId,
@@ -104,16 +106,20 @@ namespace Report.Api.Controllers
         {
             try
             {
+                var loggedUserId = getLoggedUserId();
+                if (!loggedUserId.Equals(userId))
+                    return StatusCode(403,
+                        new { message = "Não é possível atualizar informações de outro usuário" });
+
                 var user = await _repository.GetById(userId);
-
-                if (user.Equals(null))
-                    return NotFound(new { message = "Usuário não encontrado" });
-
                 user.Name  = request.Name;
                 
-                var saltedHash = hashService.GenerateSaltedHash(request.Password);
-                user.Salt = saltedHash.Salt;
-                user.Hash = saltedHash.Hash;
+                if (request.Password != null)
+                {
+                    var saltedHash = hashService.GenerateSaltedHash(request.Password);
+                    user.Salt = saltedHash.Salt;
+                    user.Hash = saltedHash.Hash;
+                }
                 
                 _repository.Update(user);
 
@@ -122,6 +128,10 @@ namespace Report.Api.Controllers
                     var response = _mapper.Map<UserResponse>(user);
                     return Ok(response);
                 }
+            }
+            catch (NullReferenceException)
+            {
+                return NotFound(new { message = "Usuário não encontrado" });
             }
             catch (Exception ex)
             {
@@ -153,6 +163,12 @@ namespace Report.Api.Controllers
             }
 
             return BadRequest();
-        }   
+        }
+
+        private int getLoggedUserId()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
+            return int.Parse(userId);
+        }
     }
 }

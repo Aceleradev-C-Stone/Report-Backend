@@ -14,6 +14,7 @@ namespace Report.Infra.Repositories
         public override Task<Log[]> GetAll()
         {
             return _dbContext.Set<Log>()
+                             .Where(log => log.Archived == false)
                              .Include(log => log.User)
                              .AsNoTracking()
                              .ToArrayAsync();
@@ -27,12 +28,32 @@ namespace Report.Infra.Repositories
                              .FirstOrDefaultAsync(log => log.Id.Equals(id));
         }
 
-        Task<Log[]> ILogRepository.GetAllByUserId(int userId)
+        public Task<Log[]> GetAllByUserId(int userId)
         {
             return _dbContext.Set<Log>()
+                             .Where(log => log.UserId.Equals(userId))
                              .Include(log => log.User)
                              .AsNoTracking()
+                             .ToArrayAsync();
+        }
+
+        public Task<Log[]> GetAllArchivedByUserId(int userId)
+        {
+            return _dbContext.Set<Log>()
                              .Where(log => log.UserId.Equals(userId))
+                             .Where(log => log.Archived.Equals(true))
+                             .Include(log => log.User)
+                             .AsNoTracking()
+                             .ToArrayAsync();
+        }
+
+        public Task<Log[]> GetAllUnarchivedByUserId(int userId)
+        {
+            return _dbContext.Set<Log>()
+                             .Where(log => log.UserId.Equals(userId))
+                             .Where(log => log.Archived.Equals(false))
+                             .Include(log => log.User)
+                             .AsNoTracking()
                              .ToArrayAsync();
         }
     }

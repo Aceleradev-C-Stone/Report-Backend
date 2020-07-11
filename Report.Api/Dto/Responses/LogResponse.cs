@@ -14,6 +14,7 @@ namespace Report.Api.Dto.Responses
         public ELogLevel Level { get; set; }
         public ELogChannel Channel { get; set; }
         public DateTime CreatedAt { get; set; }
+        public bool Archived { get; set; }
         public int UserId { get; set; }
         public string UserName { get; set; }
     }
