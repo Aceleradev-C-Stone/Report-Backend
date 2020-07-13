@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
-using Report.Domain.Enums;
+using Report.Core.Enums;
 using Report.Infra.Extensions;
 
 namespace Report.Api.Authorization

@@ -4,7 +4,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Report.Domain.Models;
+using Report.Core.Models;
 using Report.Infra.Extensions;
 
 namespace Report.Infra.Services

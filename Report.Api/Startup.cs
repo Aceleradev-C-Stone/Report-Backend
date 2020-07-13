@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Report.Api.Mappers;
-using Report.Domain.Repositories;
+using Report.Core.Repositories;
 using Report.Infra.Contexts;
 using Report.Infra.Repositories;
 using Report.Infra.Services;

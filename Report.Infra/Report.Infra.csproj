@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\Report.Domain\Report.Domain.csproj" />
+    <ProjectReference Include="..\Report.Core\Report.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

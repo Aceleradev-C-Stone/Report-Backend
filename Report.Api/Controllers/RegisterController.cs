@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Report.Api.Dto.Requests;
 using Report.Api.Dto.Responses;
-using Report.Domain.Enums;
-using Report.Domain.Models;
-using Report.Domain.Repositories;
+using Report.Core.Enums;
+using Report.Core.Models;
+using Report.Core.Repositories;
 using Report.Infra.Services.Hash;
 
 namespace Report.Api.Controllers

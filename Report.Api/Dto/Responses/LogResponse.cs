@@ -1,5 +1,5 @@
 using System;
-using Report.Domain.Enums;
+using Report.Core.Enums;
 
 namespace Report.Api.Dto.Responses
 {

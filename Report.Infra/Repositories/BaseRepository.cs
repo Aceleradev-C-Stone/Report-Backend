@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Report.Domain.Repositories;
+using Report.Core.Repositories;
 using Report.Infra.Contexts;
 
 namespace Report.Infra.Repositories

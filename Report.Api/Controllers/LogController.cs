@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Report.Api.Authorization;
 using Report.Api.Dto.Requests;
 using Report.Api.Dto.Responses;
-using Report.Domain.Enums;
-using Report.Domain.Models;
-using Report.Domain.Repositories;
+using Report.Core.Enums;
+using Report.Core.Models;
+using Report.Core.Repositories;
+using Report.Infra.Extensions;
 
 namespace Report.Api.Controllers
 {
@@ -49,14 +49,19 @@ namespace Report.Api.Controllers
         {
             try
             {
+                var managerRole = EUserRole.MANAGER;
                 var loggedUserId = getLoggedUserId();
-                if (!userId.Equals(loggedUserId))
-                    return StatusCode(403,
-                        new { message = "Não é possível obter logs de outro usuário" });
+                var loggedUserRole = getLoggedUserRole();
 
-                var logs = await _repository.GetAllByUserId(userId);
-                var response = _mapper.Map<LogResponse[]>(logs);
-                return Ok(response);
+                if (userId.Equals(loggedUserId) || loggedUserRole.Equals(managerRole.GetName()))
+                {
+                    var logs = await _repository.GetAllByUserId(userId);
+                    var response = _mapper.Map<LogResponse[]>(logs);
+                    return Ok(response);
+                }
+
+                return StatusCode(403,
+                    new { message = "Não é possível obter logs de outro usuário" });
             }
             catch (Exception ex)
             {
@@ -276,6 +281,11 @@ namespace Report.Api.Controllers
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             return int.Parse(userId);
+        }
+
+        private string getLoggedUserRole()
+        {
+            return User.FindFirst(ClaimTypes.Role).Value;
         }
     }
 }

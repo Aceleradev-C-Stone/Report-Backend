@@ -1,12 +1,11 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Report.Domain.Models;
-using Report.Domain.Repositories;
+using Report.Core.Models;
+using Report.Core.Repositories;
 using Report.Api.Authorization;
-using Report.Domain.Enums;
+using Report.Core.Enums;
 using Report.Infra.Services.Hash;
-using System.Collections.Generic;
 using AutoMapper;
 using Report.Api.Dto.Responses;
 using Report.Api.Dto.Requests;

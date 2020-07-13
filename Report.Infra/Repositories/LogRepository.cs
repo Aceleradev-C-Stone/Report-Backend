@@ -1,8 +1,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Report.Domain.Models;
-using Report.Domain.Repositories;
+using Report.Core.Models;
+using Report.Core.Repositories;
 using Report.Infra.Contexts;
 
 namespace Report.Infra.Repositories

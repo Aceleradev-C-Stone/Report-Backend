@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Report.Domain.Repositories
+namespace Report.Core.Repositories
 {
     public interface IBaseRepository<TEntity> where TEntity : class
     {

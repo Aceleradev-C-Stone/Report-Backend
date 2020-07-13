@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Report.Domain.Enums;
+using Report.Core.Enums;
 
-namespace Report.Domain.Models
+namespace Report.Core.Models
 {
     public class Log
     {   

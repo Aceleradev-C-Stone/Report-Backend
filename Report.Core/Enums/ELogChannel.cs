@@ -1,4 +1,4 @@
-namespace Report.Domain.Enums
+namespace Report.Core.Enums
 {
     public enum ELogChannel
     {

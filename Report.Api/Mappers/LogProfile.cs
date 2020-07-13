@@ -1,7 +1,7 @@
 using AutoMapper;
 using Report.Api.Dto.Requests;
 using Report.Api.Dto.Responses;
-using Report.Domain.Models;
+using Report.Core.Models;
 
 namespace Report.Api.Mappers
 {

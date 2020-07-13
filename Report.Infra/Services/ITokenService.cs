@@ -1,4 +1,4 @@
-using Report.Domain.Models;
+using Report.Core.Models;
 
 namespace Report.Infra.Services
 {

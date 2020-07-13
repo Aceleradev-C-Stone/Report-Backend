@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Report.Api.Dto.Requests;
 using Report.Api.Dto.Responses;
-using Report.Domain.Repositories;
+using Report.Core.Repositories;
 using Report.Infra.Services;
 using Report.Infra.Services.Hash;
 

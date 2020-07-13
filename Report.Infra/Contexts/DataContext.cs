@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Report.Infra.Contexts.Configurations;
-using Report.Domain.Models;
+using Report.Core.Models;
 
 namespace Report.Infra.Contexts
 {

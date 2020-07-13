@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Report.Domain.Models;
+using Report.Core.Models;
 
-namespace Report.Domain.Repositories
+namespace Report.Core.Repositories
 {
     public interface ILogRepository : IBaseRepository<Log>
     {
