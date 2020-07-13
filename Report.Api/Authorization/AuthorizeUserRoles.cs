@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Report.Core.Enums;
-using Report.Infra.Extensions;
+using Report.Core.Extensions;
 
 namespace Report.Api.Authorization
 {

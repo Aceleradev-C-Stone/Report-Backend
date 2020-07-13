@@ -6,8 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Report.Api.Dto.Requests;
 using Report.Api.Dto.Responses;
 using Report.Core.Repositories;
-using Report.Infra.Services;
-using Report.Infra.Services.Hash;
+using Report.Core.Services;
 
 namespace Report.Api.Controllers
 {

@@ -5,12 +5,12 @@ using Report.Core.Models;
 using Report.Core.Repositories;
 using Report.Api.Authorization;
 using Report.Core.Enums;
-using Report.Infra.Services.Hash;
 using AutoMapper;
 using Report.Api.Dto.Responses;
 using Report.Api.Dto.Requests;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using Report.Core.Services;
 
 namespace Report.Api.Controllers
 {

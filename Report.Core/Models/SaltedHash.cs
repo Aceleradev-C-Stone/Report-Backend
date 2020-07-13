@@ -1,4 +1,4 @@
-namespace Report.Infra.Services.Hash
+namespace Report.Core.Models
 {
     public class SaltedHash
     {

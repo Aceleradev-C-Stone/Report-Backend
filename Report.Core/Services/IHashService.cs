@@ -1,6 +1,6 @@
-using Report.Infra.Services.Hash;
+using Report.Core.Models;
 
-namespace Report.Infra.Services.Hash
+namespace Report.Core.Services
 {
     public interface IHashService
     {

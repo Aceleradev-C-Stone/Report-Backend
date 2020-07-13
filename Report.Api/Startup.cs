@@ -10,10 +10,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Report.Api.Mappers;
 using Report.Core.Repositories;
+using Report.Core.Services;
 using Report.Infra.Contexts;
 using Report.Infra.Repositories;
 using Report.Infra.Services;
-using Report.Infra.Services.Hash;
 
 namespace Report.Api
 {

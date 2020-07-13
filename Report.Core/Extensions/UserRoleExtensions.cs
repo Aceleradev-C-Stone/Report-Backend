@@ -1,7 +1,7 @@
 using System;
 using Report.Core.Enums;
 
-namespace Report.Infra.Extensions
+namespace Report.Core.Extensions
 {
     public static class UserRoleExtensions
     {

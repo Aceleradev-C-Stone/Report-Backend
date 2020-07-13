@@ -1,6 +1,6 @@
 using Report.Core.Models;
 
-namespace Report.Infra.Services
+namespace Report.Core.Services
 {
     public interface ITokenService
     {

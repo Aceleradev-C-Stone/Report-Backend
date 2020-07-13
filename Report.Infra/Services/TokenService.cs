@@ -5,7 +5,8 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Report.Core.Models;
-using Report.Infra.Extensions;
+using Report.Core.Services;
+using Report.Core.Extensions;
 
 namespace Report.Infra.Services
 {

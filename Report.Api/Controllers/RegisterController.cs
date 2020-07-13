@@ -8,7 +8,7 @@ using Report.Api.Dto.Responses;
 using Report.Core.Enums;
 using Report.Core.Models;
 using Report.Core.Repositories;
-using Report.Infra.Services.Hash;
+using Report.Core.Services;
 
 namespace Report.Api.Controllers
 {

@@ -1,12 +1,13 @@
 using System;
 using System.Security.Cryptography;
 using System.Text;
+using Report.Core.Models;
+using Report.Core.Services;
 
-namespace Report.Infra.Services.Hash
+namespace Report.Infra.Services
 {
     public class HashService : IHashService
     {
-        // TODO: Put inside HashConfig
         private const int ITERATIONS = 10000;
         private const int HASH_LENGTH = 24;
         private const int SALT_LENGTH = 24;

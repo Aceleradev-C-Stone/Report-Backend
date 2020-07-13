@@ -10,7 +10,7 @@ using Report.Api.Dto.Responses;
 using Report.Core.Enums;
 using Report.Core.Models;
 using Report.Core.Repositories;
-using Report.Infra.Extensions;
+using Report.Core.Extensions;
 
 namespace Report.Api.Controllers
 {
