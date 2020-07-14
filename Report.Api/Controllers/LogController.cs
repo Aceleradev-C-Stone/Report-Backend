@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -16,6 +15,7 @@ namespace Report.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Authorize]
     public class LogController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -28,7 +28,6 @@ namespace Report.Api.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> Get()
         {
             try
@@ -44,24 +43,17 @@ namespace Report.Api.Controllers
         }
 
         [HttpGet("user/{userId}")]
-        [Authorize]
         public async Task<IActionResult> GetLogsByUserId(int userId)
         {
             try
             {
-                var managerRole = EUserRole.MANAGER;
-                var loggedUserId = getLoggedUserId();
-                var loggedUserRole = getLoggedUserRole();
+                if (!IsAuthenticated(userId))
+                    return StatusCode(403,
+                        new { message = "Não é possível obter logs de outro usuário" });
 
-                if (userId.Equals(loggedUserId) || loggedUserRole.Equals(managerRole.GetName()))
-                {
-                    var logs = await _repository.GetAllByUserId(userId);
-                    var response = _mapper.Map<LogResponse[]>(logs);
-                    return Ok(response);
-                }
-
-                return StatusCode(403,
-                    new { message = "Não é possível obter logs de outro usuário" });
+                var logs = await _repository.GetAllByUserId(userId);
+                var response = _mapper.Map<LogResponse[]>(logs);
+                return Ok(response);
             }
             catch (Exception ex)
             {
@@ -70,13 +62,11 @@ namespace Report.Api.Controllers
         }
 
         [HttpGet("unarchived/user/{userId}")]
-        [Authorize]
         public async Task<IActionResult> GetUnarchivedLogsByUserId(int userId)
         {
             try
             {
-                var loggedUserId = getLoggedUserId();
-                if (!userId.Equals(loggedUserId))
+                if (!IsAuthenticated(userId))
                     return StatusCode(403,
                         new { message = "Não é possível obter logs de outro usuário" });
 
@@ -91,13 +81,11 @@ namespace Report.Api.Controllers
         }
 
         [HttpGet("archived/user/{userId}")]
-        [Authorize]
         public async Task<IActionResult> GetArchivedLogsByUserId(int userId)
         {
             try
             {
-                var loggedUserId = getLoggedUserId();
-                if (!userId.Equals(loggedUserId))
+                if (!IsAuthenticated(userId))
                     return StatusCode(403,
                         new { message = "Não é possível obter logs de outro usuário" });
 
@@ -112,15 +100,13 @@ namespace Report.Api.Controllers
         }
 
         [HttpGet("{logId}")]
-        [Authorize]
         public async Task<IActionResult> GetLogById(int logId)
         {
             try
             {
                 var log = await _repository.GetById(logId);
 
-                var userId = getLoggedUserId();
-                if (!log.UserId.Equals(userId))
+                if (!IsAuthenticated(log.UserId))
                     return StatusCode(403,
                         new { message = "Não é possível obter logs de outro usuário" });
 
@@ -134,20 +120,24 @@ namespace Report.Api.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> Post(CreateLogRequest request)
         {
             try
             {
-                int userId = getLoggedUserId();
+                // If user role equals MANAGER, use id from request body,
+                // otherwise, use logged user id
+                int userId = GetLoggedUserId();
+                if (IsLoggedUserManager() && request.UserId.HasValue)
+                    userId =  request.UserId.Value;
 
-                var log = mapCreateLogRequestToLog(userId, request);
+                var log = MapCreateLogRequestToLog(userId, request);
                 _repository.Add(log);
 
                 if (await _repository.SaveChangesAsync())
                 {
+                    log = await _repository.GetById(log.Id);
                     var response = _mapper.Map<LogResponse>(log);
-                    return Ok(log);
+                    return Ok(response);
                 }
             }
             catch (Exception ex)
@@ -159,19 +149,17 @@ namespace Report.Api.Controllers
         }
 
         [HttpPut("{logId}")]
-        [Authorize]
         public async Task<IActionResult> Put(int logId, UpdateLogRequest request)
         {
             try
             {
                 var log = await _repository.GetById(logId);
 
-                var userId = getLoggedUserId();
-                if (!log.UserId.Equals(userId))
+                if (!IsAuthenticated(log.UserId))
                     return StatusCode(403,
                         new { message = "Não é possível atualizar um log de outro usuário" });
 
-                log = mapUpdateLogRequestToLog(log, request);
+                log = MapUpdateLogRequestToLog(log, request);
                 _repository.Update(log);
 
                 if (await _repository.SaveChangesAsync())
@@ -193,7 +181,6 @@ namespace Report.Api.Controllers
         }
 
         [HttpDelete("{logId}")]
-        [Authorize]
         public async Task<IActionResult> Delete(int logId)
         {
             try
@@ -203,8 +190,7 @@ namespace Report.Api.Controllers
                 if (log.Equals(null))
                     return NotFound(new { message = "Log não encontrado" });
 
-                var userId = getLoggedUserId();
-                if (!log.UserId.Equals(userId))
+                if (!IsAuthenticated(log.UserId))
                     return StatusCode(403,
                         new { message = "Não é possível deletar um log de outro usuário" });
                 
@@ -222,15 +208,13 @@ namespace Report.Api.Controllers
         }
 
         [HttpPatch("archive/{logId}")]
-        [Authorize]
         public async Task<IActionResult> Archive(int logId)
         {
             try
             {
                 var log = await _repository.GetById(logId);
 
-                var userId = getLoggedUserId();
-                if (!log.UserId.Equals(userId))
+                if (!IsAuthenticated(log.UserId))
                     return StatusCode(403, new {
                         message = "Não é possível arquivar ou desarquivar um log de outro usuário"
                     });
@@ -256,7 +240,7 @@ namespace Report.Api.Controllers
             return BadRequest();
         }
 
-        private Log mapCreateLogRequestToLog(int userId, CreateLogRequest request)
+        private Log MapCreateLogRequestToLog(int userId, CreateLogRequest request)
         {
             var log = _mapper.Map<Log>(request);
             log.UserId = userId;
@@ -265,7 +249,7 @@ namespace Report.Api.Controllers
             return log;
         }
 
-        private Log mapUpdateLogRequestToLog(Log log, UpdateLogRequest request)
+        private Log MapUpdateLogRequestToLog(Log log, UpdateLogRequest request)
         {
             log.Description = request.Description;
             log.Title       = request.Title;
@@ -277,13 +261,25 @@ namespace Report.Api.Controllers
             return log;
         }
 
-        private int getLoggedUserId()
+        // TODO: Put inside UserService
+
+        private bool IsAuthenticated(int userId)
+        {
+            return userId == GetLoggedUserId() || IsLoggedUserManager();
+        }
+
+        private bool IsLoggedUserManager()
+        {
+            return GetLoggedUserRole() == EUserRole.MANAGER.GetName();
+        }
+
+        private int GetLoggedUserId()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier).Value;
             return int.Parse(userId);
         }
 
-        private string getLoggedUserRole()
+        private string GetLoggedUserRole()
         {
             return User.FindFirst(ClaimTypes.Role).Value;
         }

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Report.Infra", "Report.Infr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Report.Core", "Report.Core\Report.Core.csproj", "{6F4AA701-130F-45C7-910A-6213CE12D4D0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Report.Tests", "Report.Tests\Report.Tests.csproj", "{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,5 +72,17 @@ Global
 		{A75D8444-83C1-43CB-ABD0-9270530CE91B}.Release|x64.Build.0 = Release|Any CPU
 		{A75D8444-83C1-43CB-ABD0-9270530CE91B}.Release|x86.ActiveCfg = Release|Any CPU
 		{A75D8444-83C1-43CB-ABD0-9270530CE91B}.Release|x86.Build.0 = Release|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Debug|x64.Build.0 = Debug|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Debug|x86.Build.0 = Debug|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Release|x64.ActiveCfg = Release|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Release|x64.Build.0 = Release|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Release|x86.ActiveCfg = Release|Any CPU
+		{4CFC2A42-A112-43E5-89AF-2A92505DDFEF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

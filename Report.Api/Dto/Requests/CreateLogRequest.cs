@@ -29,5 +29,7 @@ namespace Report.Api.Dto.Requests
 
         [Required(ErrorMessage="O canal do log é necessário")]
         public ELogChannel Channel { get; set; }
+        
+        public int? UserId { get; set; }
     }
 }
