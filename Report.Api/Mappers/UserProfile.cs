@@ -1,6 +1,6 @@
 using AutoMapper;
 using Report.Api.Dto.Requests;
-using Report.Api.Dto.Responses;
+using Report.Core.Dto.Responses;
 using Report.Core.Models;
 
 namespace Report.Api.Mappers

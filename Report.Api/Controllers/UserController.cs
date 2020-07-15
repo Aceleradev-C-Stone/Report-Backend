@@ -11,6 +11,7 @@ using Report.Api.Dto.Requests;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Report.Core.Services;
+using Report.Core.Dto.Responses;
 
 namespace Report.Api.Controllers
 {

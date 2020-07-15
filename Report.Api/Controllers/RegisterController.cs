@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Report.Api.Dto.Requests;
 using Report.Api.Dto.Responses;
+using Report.Core.Dto.Responses;
 using Report.Core.Enums;
 using Report.Core.Models;
 using Report.Core.Repositories;

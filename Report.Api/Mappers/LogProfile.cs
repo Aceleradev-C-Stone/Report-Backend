@@ -1,6 +1,6 @@
 using AutoMapper;
 using Report.Api.Dto.Requests;
-using Report.Api.Dto.Responses;
+using Report.Core.Dto.Responses;
 using Report.Core.Models;
 
 namespace Report.Api.Mappers
@@ -11,8 +11,11 @@ namespace Report.Api.Mappers
         {
             CreateMap<Log, LogResponse>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User.Name));
-            CreateMap<CreateLogRequest, Log>();
-            CreateMap<UpdateLogRequest, Log>();
+            CreateMap<Core.Dto.Requests.CreateLogRequest, Log>();
+            CreateMap<Core.Dto.Requests.UpdateLogRequest, Log>();
+
+            CreateMap<CreateLogRequest, Core.Dto.Requests.CreateLogRequest>();
+            CreateMap<UpdateLogRequest, Core.Dto.Requests.UpdateLogRequest>();
         }
     }
 }

@@ -11,5 +11,6 @@ namespace Report.Core.Dto.Requests
         public int EventCount { get; set; }
         public ELogLevel Level { get; set; }
         public ELogChannel Channel { get; set; }
+        public int? UserId { get; set; }
     }
 }

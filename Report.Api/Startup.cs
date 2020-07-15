@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Report.Api.Mappers;
 using Report.Core.Repositories;
 using Report.Core.Services;
@@ -33,9 +34,10 @@ namespace Report.Api
             );
 
             services.AddControllers()
-                    .AddNewtonsoftJson(opt => opt.SerializerSettings.ReferenceLoopHandling =
-                        Newtonsoft.Json.ReferenceLoopHandling.Ignore
-                    );
+                    .AddNewtonsoftJson(opt => {
+                        opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
+                        opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    });
                     
             var key = Encoding.ASCII.GetBytes(
                 Configuration.GetSection("Security").GetSection("TokenSecret").Value);
@@ -58,12 +60,16 @@ namespace Report.Api
                 };
             });
 
-            services.AddAutoMapper(typeof(UserProfile));
+            services.AddAutoMapper(typeof(UserProfile), typeof(LogProfile));
+            services.AddHttpContextAccessor();
 
             services.AddSingleton<IConfiguration>(Configuration);
 
             services.AddSingleton<IHashService, HashService>();
             services.AddSingleton<ITokenService, TokenService>();
+
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ILogService, LogService>();
 
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ILogRepository, LogRepository>();
