@@ -12,6 +12,12 @@ namespace Report.Api.Mappers
             CreateMap<User, UserResponse>();
             CreateMap<CreateUserRequest, User>();
             CreateMap<UpdateUserRequest, User>();
+
+            CreateMap<Core.Dto.Requests.CreateUserRequest, User>();
+            CreateMap<Core.Dto.Requests.UpdateUserRequest, User>();
+
+            CreateMap<CreateUserRequest, Core.Dto.Requests.CreateUserRequest>();
+            CreateMap<UpdateUserRequest, Core.Dto.Requests.UpdateUserRequest>();
         }
     }
 }

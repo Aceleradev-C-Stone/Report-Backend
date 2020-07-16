@@ -8,8 +8,8 @@ namespace Report.Core.Services
     {
         Task<Response> Get();
         Task<Response> GetUserById(int userId);
-        Task<Response> Post(CreateUserRequest request);
-        Task<Response> Put(int userId, UpdateUserRequest request);
+        Task<Response> Create(CreateUserRequest request);
+        Task<Response> Update(int userId, UpdateUserRequest request);
         Task<Response> Delete(int userId);
         bool IsAuthenticated(int userId);
         bool IsLoggedUserManager();

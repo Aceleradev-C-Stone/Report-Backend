@@ -1,46 +1,204 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Report.Core.Dto.Requests;
 using Report.Core.Dto.Responses;
 using Report.Core.Enums;
 using Report.Core.Extensions;
+using Report.Core.Models;
+using Report.Core.Repositories;
 using Report.Core.Services;
 
 namespace Report.Infra.Services
 {
     public class UserService : IUserService
     {
-        public UserService(IHttpContextAccessor http)
+        private readonly IMapper _mapper;
+        private readonly IHashService _hashService;
+        private readonly IUserRepository _repository;
+        
+        public UserService(
+            IMapper mapper,
+            IHttpContextAccessor http,
+            IHashService hashService,
+            IUserRepository repository)
         {
-            User = http.HttpContext.User;
+            SetupUser(http);
+            _mapper = mapper;
+            _hashService = hashService;
+            _repository = repository;
         }
 
-        public Task<Response> Get()
+        public async Task<Response> Get()
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                if (!IsLoggedUserManager())
+                    return new Response { Code = 403 };
+
+                var users = await _repository.GetAll();
+                var response = _mapper.Map<UserResponse[]>(users);
+                return new Response { Code = 200, Data = response };
+            }
+            catch (Exception ex)
+            {
+                return new Response { Code = 400, Message = ex.Message };
+            }
         }
 
-        public Task<Response> GetUserById(int userId)
+        public async Task<Response> GetUserById(int userId)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                if (!IsAuthenticated(userId))
+                {
+                    return new Response
+                    {
+                        Code = 403,
+                        Message = "Não é possível obter informações de outro usuário"
+                    };
+                }
+
+                var user = await _repository.GetById(userId);
+                if (user == null)
+                {
+                    return new Response
+                    {
+                        Code = 404,
+                        Message = "Usuário não encontrado"
+                    };
+                }
+                
+                var response = _mapper.Map<UserResponse>(user);
+                return new Response { Code = 200, Data = response };
+            }
+            catch (Exception ex)
+            {
+                return new Response { Code = 400, Message = ex.Message };
+            }
         }
 
-        public Task<Response> Post(CreateUserRequest request)
+        public async Task<Response> Create(CreateUserRequest request)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                if (!IsLoggedUserManager())
+                    return new Response { Code = 403 };
+
+                var user = _mapper.Map<User>(request);
+                var found = await _repository.GetByEmail(user.Email);
+
+                if (found != null)
+                {
+                    return new Response
+                    {
+                        Code = 409,
+                        Message = "Esse email já está sendo utilizado."
+                    };
+                }
+
+                var saltedHash = _hashService.GenerateSaltedHash(request.Password);
+                user.Salt = saltedHash.Salt;
+                user.Hash = saltedHash.Hash;
+
+                user.Role = EUserRole.DEVELOPER;
+                user.CreatedAt = DateTime.Now;
+
+                _repository.Add(user);
+                
+                if (await _repository.SaveChangesAsync())
+                {
+                    var response = _mapper.Map<UserResponse>(user);
+                    return new Response { Code = 200, Data = response };
+                }
+
+                return new Response { Code = 400, Message = "Erro desconhecido"};
+            }
+            catch (Exception ex)
+            {
+                return new Response { Code = 400, Message = ex.Message };
+            }
         }
 
-        public Task<Response> Put(int userId, UpdateUserRequest request)
+        public async Task<Response> Update(int userId, UpdateUserRequest request)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                if (!IsAuthenticated(userId))
+                {
+                    return new Response
+                    {
+                        Code = 403,
+                        Message = "Não é possível atualizar informações de outro usuário"
+                    };
+                }
+
+                var user = await _repository.GetById(userId);
+                user.Name  = request.Name;
+                
+                if (request.Password != null)
+                {
+                    var saltedHash = _hashService.GenerateSaltedHash(request.Password);
+                    user.Salt = saltedHash.Salt;
+                    user.Hash = saltedHash.Hash;
+                }
+                
+                _repository.Update(user);
+
+                if (await _repository.SaveChangesAsync())
+                {
+                    var response = _mapper.Map<UserResponse>(user);
+                    return new Response { Code = 200, Data = response };
+                }
+
+                return new Response { Code = 400, Message = "Erro desconhecido" };
+            }
+            catch (NullReferenceException)
+            {
+                return new Response { Code = 404, Message = "Usuário não encontrado" };
+            }
+            catch (Exception ex)
+            {
+                return new Response { Code = 400, Message = ex.Message };
+            }
         }
 
-        public Task<Response> Delete(int userId)
+        public async Task<Response> Delete(int userId)
         {
-            throw new System.NotImplementedException();
+            try
+            {
+                if (!IsAuthenticated(userId))
+                {
+                    return new Response
+                    {
+                        Code = 403,
+                        Message = "Não é possível deletar informações de outro usuário"
+                    };
+                }
+
+                var user = await _repository.GetById(userId);
+                if (user == null)
+                {
+                    return new Response
+                    {
+                        Code = 404,
+                        Message = "Usuário não encontrado"
+                    };
+                }
+                
+                _repository.Delete(user);
+
+                if (await _repository.SaveChangesAsync())
+                    return new  Response { Code = 200, Message = "Usuário deletado" };
+
+                return new Response { Code = 400, Message = "Erro desconhecido" };
+            }
+            catch (Exception ex)
+            {
+                return new Response { Code = 400, Message = ex.Message };
+            }
         }
 
         public bool IsAuthenticated(int userId)
@@ -62,6 +220,11 @@ namespace Report.Infra.Services
         public string GetLoggedUserRole()
         {
             return User.FindFirst(ClaimTypes.Role).Value;
+        }
+
+        private void SetupUser(IHttpContextAccessor http)
+        {
+            User = http.HttpContext.User;
         }
 
         public ClaimsPrincipal User { get; private set; }
