@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Report.Api.Dto.Requests;
+using Report.Api.Extensions;
 using Report.Core.Services;
 
 namespace Report.Api.Controllers
@@ -59,7 +60,7 @@ namespace Report.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(CreateLogRequest request)
         {
-            var mapped = _mapper.Map<Core.Dto.Requests.CreateLogRequest>(request);
+            var mapped = request.MapToCoreRequest(_mapper);
             var response = await _logService.Create(mapped);
             return StatusCode(response.Code, response);
         }
@@ -67,7 +68,7 @@ namespace Report.Api.Controllers
         [HttpPut("{logId}")]
         public async Task<IActionResult> Put(int logId, UpdateLogRequest request)
         {
-            var mapped = _mapper.Map<Core.Dto.Requests.UpdateLogRequest>(request);
+            var mapped = request.MapToCoreRequest(_mapper);
             var response = await _logService.Update(logId, mapped);
             return StatusCode(response.Code, response);
         }

@@ -9,13 +9,16 @@ using Report.Core.Services;
 
 namespace Report.Infra.Services
 {
-    public class LogService : ILogService
+    public class LogService : BaseService, ILogService
     {
         private readonly IMapper _mapper;
         private readonly ILogRepository _repository;
         private readonly IUserService _userService;
 
-        public LogService(IMapper mapper, ILogRepository repository, IUserService userService)
+        public LogService(
+            IMapper mapper,
+            ILogRepository repository,
+            IUserService userService)
         {
             _mapper = mapper;
             _repository = repository;
@@ -28,11 +31,11 @@ namespace Report.Infra.Services
             {
                 var logs = await _repository.GetAll();
                 var response = _mapper.Map<LogResponse[]>(logs);
-                return new Response { Code = 200, Data = response };
+                return OkResponse(null, response);
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -41,21 +44,16 @@ namespace Report.Infra.Services
             try
             {
                 if (!_userService.IsAuthenticated(userId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível obter logs de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível obter logs de outro usuário");
 
                 var logs = await _repository.GetAllByUserId(userId);
                 var response = _mapper.Map<LogResponse[]>(logs);
-                return new Response { Code = 200, Data = response };
+                return OkResponse(null, response);
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -64,21 +62,16 @@ namespace Report.Infra.Services
              try
             {
                 if (!_userService.IsAuthenticated(userId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível obter logs de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível obter logs de outro usuário");
                 
                 var logs = await _repository.GetAllUnarchivedByUserId(userId);
                 var response = _mapper.Map<LogResponse[]>(logs);
-                return new Response { Code = 200, Data = response };
+                return OkResponse(null, response);
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -87,21 +80,16 @@ namespace Report.Infra.Services
             try
             {
                 if (!_userService.IsAuthenticated(userId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível obter logs de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível obter logs de outro usuário");
 
                 var logs = await _repository.GetAllArchivedByUserId(userId);
                 var response = _mapper.Map<LogResponse[]>(logs);
-                return new Response { Code = 200, Data = response };
+                return OkResponse(null, response);
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -112,20 +100,15 @@ namespace Report.Infra.Services
                 var log = await _repository.GetById(logId);
 
                 if (!_userService.IsAuthenticated(log.UserId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível obter logs de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível obter logs de outro usuário");
 
                 var response = _mapper.Map<LogResponse>(log);
-                return new Response { Code = 200, Data = response };
+                return OkResponse(null, response);
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return ForbiddenResponse(ex.Message);
             }
         }
 
@@ -146,14 +129,14 @@ namespace Report.Infra.Services
                 {
                     log = await _repository.GetById(log.Id);
                     var response = _mapper.Map<LogResponse>(log);
-                    return new Response { Code = 200, Data = response };
+                    return OkResponse(null, response);
                 }
 
-                return new Response { Code = 400, Message = "Erro desconhecido" };
+                return BadRequestResponse("Erro desconhecido");
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -164,13 +147,8 @@ namespace Report.Infra.Services
                 var log = await _repository.GetById(logId);
 
                 if (!_userService.IsAuthenticated(log.UserId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível atualizar um log de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível atualizar um log de outro usuário");
 
                 log = MapUpdateLogRequestToLog(log, request);
                 _repository.Update(log);
@@ -178,18 +156,18 @@ namespace Report.Infra.Services
                 if (await _repository.SaveChangesAsync())
                 {
                     var response = _mapper.Map<LogResponse>(log);
-                    return new Response { Code = 200, Data = response };
+                    return OkResponse(null, response);
                 }
 
-                return new Response { Code = 400, Message = "Erro desconhecido" };
+                return BadRequestResponse("Erro desconhecido");
             }
             catch (NullReferenceException)
             {
-                return new Response { Code = 404, Message = "Log não encontrado" };
+                return NotFoundResponse("Log não encontrado");
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -200,28 +178,23 @@ namespace Report.Infra.Services
                 var log = await _repository.GetById(logId);
 
                 if (!_userService.IsAuthenticated(log.UserId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível deletar um log de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível deletar um log de outro usuário");
                 
                 _repository.Delete(log);
 
                 if (await _repository.SaveChangesAsync())
-                    return new Response { Code = 200, Message = "Log deletado" };
+                    return OkResponse("Log deletado");
                 
-                return new Response { Code = 400, Message = "Erro desconhecido" };
+                return BadRequestResponse("Erro desconhecido");
             }
             catch (NullReferenceException)
             {
-                return new Response { Code = 404, Message = "Log não encontrado" };
+                return NotFoundResponse("Log não encontrado");
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -232,13 +205,8 @@ namespace Report.Infra.Services
                 var log = await _repository.GetById(logId);
 
                 if (!_userService.IsAuthenticated(log.UserId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível arquivar ou desarquivar um log de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível arquivar ou desarquivar um log de outro usuário");
 
                 log.Archived = !log.Archived;
                 _repository.Update(log);
@@ -246,18 +214,18 @@ namespace Report.Infra.Services
                 if (await _repository.SaveChangesAsync())
                 {
                     var response = _mapper.Map<LogResponse>(log);
-                    return new Response { Code = 200, Data = response };
+                    return OkResponse(null, response);
                 }
                 
-                return new Response { Code = 400, Message = "Erro desconhecido" };
+                return BadRequestResponse("Erro desconhecido");
             }
             catch (NullReferenceException)
             {
-                return new Response { Code = 404, Message = "Log não encontrado" };
+                return NotFoundResponse("Log não encontrado");
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 

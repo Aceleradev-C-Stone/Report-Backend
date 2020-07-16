@@ -13,7 +13,7 @@ using Report.Core.Services;
 
 namespace Report.Infra.Services
 {
-    public class UserService : IUserService
+    public class UserService : BaseService, IUserService
     {
         private readonly IMapper _mapper;
         private readonly IHashService _hashService;
@@ -36,15 +36,15 @@ namespace Report.Infra.Services
             try
             {
                 if (!IsLoggedUserManager())
-                    return new Response { Code = 403 };
+                    return ForbiddenResponse();
 
                 var users = await _repository.GetAll();
                 var response = _mapper.Map<UserResponse[]>(users);
-                return new Response { Code = 200, Data = response };
+                return OkResponse(null, response);
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -53,30 +53,19 @@ namespace Report.Infra.Services
             try
             {
                 if (!IsAuthenticated(userId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível obter informações de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível obter informações de outro usuário");
 
                 var user = await _repository.GetById(userId);
                 if (user == null)
-                {
-                    return new Response
-                    {
-                        Code = 404,
-                        Message = "Usuário não encontrado"
-                    };
-                }
+                    return NotFoundResponse("Usuário não encontrado");
                 
                 var response = _mapper.Map<UserResponse>(user);
-                return new Response { Code = 200, Data = response };
+                return OkResponse(null, response);
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -85,19 +74,13 @@ namespace Report.Infra.Services
             try
             {
                 if (!IsLoggedUserManager())
-                    return new Response { Code = 403 };
+                    return ForbiddenResponse();
 
                 var user = _mapper.Map<User>(request);
                 var found = await _repository.GetByEmail(user.Email);
 
                 if (found != null)
-                {
-                    return new Response
-                    {
-                        Code = 409,
-                        Message = "Esse email já está sendo utilizado."
-                    };
-                }
+                    return ConflictResponse("Esse email já está sendo utilizado");
 
                 var saltedHash = _hashService.GenerateSaltedHash(request.Password);
                 user.Salt = saltedHash.Salt;
@@ -111,14 +94,14 @@ namespace Report.Infra.Services
                 if (await _repository.SaveChangesAsync())
                 {
                     var response = _mapper.Map<UserResponse>(user);
-                    return new Response { Code = 200, Data = response };
+                    return OkResponse(null, response);
                 }
 
-                return new Response { Code = 400, Message = "Erro desconhecido"};
+                return BadRequestResponse("Erro desconhecido");
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -127,13 +110,8 @@ namespace Report.Infra.Services
             try
             {
                 if (!IsAuthenticated(userId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível atualizar informações de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível atualizar informações de outro usuário");
 
                 var user = await _repository.GetById(userId);
                 user.Name  = request.Name;
@@ -150,18 +128,18 @@ namespace Report.Infra.Services
                 if (await _repository.SaveChangesAsync())
                 {
                     var response = _mapper.Map<UserResponse>(user);
-                    return new Response { Code = 200, Data = response };
+                    return OkResponse(null, response);
                 }
 
-                return new Response { Code = 400, Message = "Erro desconhecido" };
+                return BadRequestResponse("Erro desconhecido");
             }
             catch (NullReferenceException)
             {
-                return new Response { Code = 404, Message = "Usuário não encontrado" };
+                return NotFoundResponse("Usuário não encontrado");
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 
@@ -170,34 +148,23 @@ namespace Report.Infra.Services
             try
             {
                 if (!IsAuthenticated(userId))
-                {
-                    return new Response
-                    {
-                        Code = 403,
-                        Message = "Não é possível deletar informações de outro usuário"
-                    };
-                }
+                    return ForbiddenResponse(
+                        "Não é possível deletar informações de outro usuário");
 
                 var user = await _repository.GetById(userId);
                 if (user == null)
-                {
-                    return new Response
-                    {
-                        Code = 404,
-                        Message = "Usuário não encontrado"
-                    };
-                }
+                    return NotFoundResponse("Usuário não encontrado");
                 
                 _repository.Delete(user);
 
                 if (await _repository.SaveChangesAsync())
-                    return new  Response { Code = 200, Message = "Usuário deletado" };
+                    return OkResponse("Usuário deletado");
 
-                return new Response { Code = 400, Message = "Erro desconhecido" };
+                return BadRequestResponse("Erro desconhecido");
             }
             catch (Exception ex)
             {
-                return new Response { Code = 400, Message = ex.Message };
+                return BadRequestResponse(ex.Message);
             }
         }
 

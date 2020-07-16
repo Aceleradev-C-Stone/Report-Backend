@@ -4,6 +4,7 @@ using AutoMapper;
 using Report.Api.Dto.Requests;
 using Microsoft.AspNetCore.Authorization;
 using Report.Core.Services;
+using Report.Api.Extensions;
 
 namespace Report.Api.Controllers
 {
@@ -38,7 +39,7 @@ namespace Report.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Post(CreateUserRequest request)
         {
-            var mapped = _mapper.Map<Core.Dto.Requests.CreateUserRequest>(request);
+            var mapped = request.MapToCoreRequest(_mapper);
             var response = await _userService.Create(mapped);
             return StatusCode(response.Code, response);
         }
@@ -46,7 +47,7 @@ namespace Report.Api.Controllers
         [HttpPut("{userId}")]
         public async Task<IActionResult> Put(int userId, UpdateUserRequest request)
         {
-            var mapped = _mapper.Map<Core.Dto.Requests.UpdateUserRequest>(request);
+            var mapped = request.MapToCoreRequest(_mapper);
             var response = await _userService.Update(userId, mapped);
             return StatusCode(response.Code, response);
         }
