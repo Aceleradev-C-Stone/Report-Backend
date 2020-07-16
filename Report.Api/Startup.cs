@@ -60,7 +60,11 @@ namespace Report.Api
                 };
             });
 
-            services.AddAutoMapper(typeof(UserProfile), typeof(LogProfile));
+            services.AddAutoMapper(
+                typeof(AuthProfile),
+                typeof(UserProfile),
+                typeof(LogProfile));
+                
             services.AddHttpContextAccessor();
 
             services.AddSingleton<IConfiguration>(Configuration);
@@ -68,6 +72,7 @@ namespace Report.Api
             services.AddSingleton<IHashService, HashService>();
             services.AddSingleton<ITokenService, TokenService>();
 
+            services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ILogService, LogService>();
 

@@ -16,19 +16,19 @@ namespace Report.Infra.Services
     public class UserService : BaseService, IUserService
     {
         private readonly IMapper _mapper;
-        private readonly IHashService _hashService;
         private readonly IUserRepository _repository;
+        private readonly IHashService _hashService;
         
         public UserService(
             IMapper mapper,
             IHttpContextAccessor http,
-            IHashService hashService,
-            IUserRepository repository)
+            IUserRepository repository,
+            IHashService hashService)
         {
             SetupUser(http);
             _mapper = mapper;
-            _hashService = hashService;
             _repository = repository;
+            _hashService = hashService;
         }
 
         public async Task<Response> Get()

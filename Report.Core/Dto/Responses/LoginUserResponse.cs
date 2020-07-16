@@ -1,6 +1,6 @@
 using Report.Core.Dto.Responses;
 
-namespace Report.Api.Dto.Responses
+namespace Report.Core.Dto.Responses
 {
     public class LoginUserResponse
     {
