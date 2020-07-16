@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\Report.Core\Report.Core.csproj" />
     <ProjectReference Include="..\Report.Infra\Report.Infra.csproj" />
   </ItemGroup>
 
