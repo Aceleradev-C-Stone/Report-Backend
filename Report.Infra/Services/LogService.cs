@@ -108,7 +108,7 @@ namespace Report.Infra.Services
             }
             catch (Exception ex)
             {
-                return ForbiddenResponse(ex.Message);
+                return BadRequestResponse(ex.Message);
             }
         }
 

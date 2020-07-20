@@ -40,6 +40,7 @@ namespace Report.Tests.Helpers
                 cfg.AddProfile<UserProfile>();
                 cfg.AddProfile<LogProfile>();
                 cfg.CreateMap<User, UpdateUserRequest>();
+                cfg.CreateMap<Log, UpdateLogRequest>();
             });
 
             this.Mapper = configuration.CreateMapper();
@@ -90,6 +91,70 @@ namespace Report.Tests.Helpers
                 .Callback(() => throw new Exception("Test Exception"));
 
             repository.Setup(x => x.GetByEmail(It.IsAny<string>()))
+                .Callback(() => throw new Exception("Test Exception"));
+
+            repository.Setup(x => x.SaveChangesAsync())
+                .Callback(() => throw new Exception("Test Exception"));
+
+            return repository;
+        }
+
+        public Mock<ILogRepository> FakeLogRepository()
+        {
+            var repository = new Mock<ILogRepository>();
+
+            repository.Setup(x => x.GetAll())
+                .Returns(Task.FromResult(Get<Log>()
+                    .Where(log => log.Archived == false)
+                    .ToArray()));
+            
+            repository.Setup(x => x.GetAllByUserId(It.IsAny<int>()))
+                .Returns((int userId) => Task.FromResult(Get<Log>()
+                    .Where(log => log.UserId.Equals(userId))
+                    .ToArray()));
+
+            repository.Setup(x => x.GetAllUnarchivedByUserId(It.IsAny<int>()))
+                .Returns((int userId) => Task.FromResult(Get<Log>()
+                    .Where(log => log.UserId.Equals(userId))
+                    .Where(log => log.Archived.Equals(false))
+                    .ToArray()));
+
+            repository.Setup(x => x.GetAllArchivedByUserId(It.IsAny<int>()))
+                .Returns((int userId) => Task.FromResult(Get<Log>()
+                    .Where(log => log.UserId.Equals(userId))
+                    .Where(log => log.Archived.Equals(true))
+                    .ToArray()));
+
+            repository.Setup(x => x.GetById(It.IsAny<int>()))
+                .Returns((int id) => Task.FromResult(Get<Log>()
+                    .FirstOrDefault(log => log.Id == id)));
+
+            repository.Setup(x => x.Add(It.IsAny<Log>()))
+                .Callback<Log>(log => log.Id = 999);
+
+            repository.Setup(x => x.SaveChangesAsync())
+                .Returns(Task.FromResult(true));
+
+            return repository;
+        }
+
+        public Mock<ILogRepository> FakeLogRepositoryException()
+        {
+            var repository = new Mock<ILogRepository>();
+            
+            repository.Setup(x => x.GetAll())
+                .Callback(() => throw new Exception("Test Exception"));
+
+            repository.Setup(x => x.GetAllByUserId(It.IsAny<int>()))
+                .Callback(() => throw new Exception("Test Exception"));
+            
+            repository.Setup(x => x.GetAllUnarchivedByUserId(It.IsAny<int>()))
+                .Callback(() => throw new Exception("Test Exception"));
+                
+            repository.Setup(x => x.GetAllArchivedByUserId(It.IsAny<int>()))
+                .Callback(() => throw new Exception("Test Exception"));
+
+            repository.Setup(x => x.GetById(It.IsAny<int>()))
                 .Callback(() => throw new Exception("Test Exception"));
 
             repository.Setup(x => x.SaveChangesAsync())
