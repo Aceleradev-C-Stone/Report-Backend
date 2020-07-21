@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using Newtonsoft.Json;
 using Report.Api.Mappers;
@@ -30,6 +31,8 @@ namespace Report.Tests.Helpers
             DataFileNames.Add(typeof(User), $"TestData{Slash}Users.json");
             DataFileNames.Add(typeof(CreateUserRequest), $"TestData{Slash}Users.json");
             DataFileNames.Add(typeof(UpdateUserRequest), $"TestData{Slash}Users.json");
+            DataFileNames.Add(typeof(LoginUserRequest), $"TestData{Slash}Users.json");
+            DataFileNames.Add(typeof(RegisterUserRequest), $"TestData{Slash}Users.json");
             DataFileNames.Add(typeof(Log), $"TestData{Slash}Logs.json");
             DataFileNames.Add(typeof(CreateLogRequest), $"TestData{Slash}Logs.json");
             DataFileNames.Add(typeof(UpdateLogRequest), $"TestData{Slash}Logs.json");
@@ -179,6 +182,24 @@ namespace Report.Tests.Helpers
             http.Setup(x => x.HttpContext).Returns(context);
 
             return http;
+        }
+
+        public Mock<IConfiguration> FakeConfiguration()
+        {
+            var config = new Mock<IConfiguration>();
+            var securitySection = new Mock<IConfigurationSection>();
+            var tokenSection = new Mock<IConfigurationSection>();
+
+            tokenSection.Setup(x => x.Value)
+                .Returns("cmwSy38DAXQX4sgjE9qzyDydfnf5DnhjkHzNX7JFn8r3RpLeQCA3tdVbJXuN9FTr");
+
+            securitySection.Setup(x => x.GetSection(It.Is<string>(s => s == "TokenSecret")))
+                .Returns(tokenSection.Object);
+
+            config.Setup(x => x.GetSection(It.Is<string>(s => s == "Security")))
+                .Returns(securitySection.Object);
+
+            return config;
         }
 
         public IMapper Mapper { get; }
