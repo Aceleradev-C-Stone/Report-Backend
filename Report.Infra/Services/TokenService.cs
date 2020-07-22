@@ -45,6 +45,36 @@ namespace Report.Infra.Services
             return tokenHandler.WriteToken(token);
         }
 
+        public bool IsValid(string token)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(
+                _config.GetSection("Security").GetSection("TokenSecret").Value);
+            var parameters = new TokenValidationParameters()
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuerSigningKey = true,
+            };
+
+            try
+            {
+                SecurityToken validated = null;
+                var claims = tokenHandler.ValidateToken(token, parameters, out validated);
+                if (claims.FindFirst(ClaimTypes.NameIdentifier) == null) return false;
+                if (claims.FindFirst(ClaimTypes.Name) == null) return false;
+                if (claims.FindFirst(ClaimTypes.Email) == null) return false;
+                if (claims.FindFirst(ClaimTypes.Role) == null) return false;
+                return validated != null;
+            }
+            catch (SecurityTokenException)
+            {
+                return false;
+            }
+        }
+
         public int GetExpirationInSeconds() => SECONDS_TO_EXPIRE;
         public int GetExpirationInMinutes() => SECONDS_TO_EXPIRE / 60;
         public int GetExpirationInHours() => SECONDS_TO_EXPIRE / (60 * 60);

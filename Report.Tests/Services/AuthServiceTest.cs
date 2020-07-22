@@ -28,7 +28,6 @@ namespace Report.Tests.Services
             var request = fakes.Get<LoginUserRequest>().First();
             var user = fakes.Get<User>().First();
 
-            // TODO: Validate token 
             var response = new LoginUserResponse();
             response.User = fakes.Mapper.Map<UserResponse>(user);
             response.ExpiresIn = tokenService.GetExpirationInSeconds();
@@ -45,6 +44,7 @@ namespace Report.Tests.Services
             Assert.IsType<Response>(actual);
             Assert.NotNull(actual);
             Assert.Equal(expected, actual, new LoginUserResponseComparer());
+            Assert.True(tokenService.IsValid(data.Token));
         }
 
         [Fact]
