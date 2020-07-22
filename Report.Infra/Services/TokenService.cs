@@ -24,7 +24,6 @@ namespace Report.Infra.Services
         public string GenerateToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var k = _config.GetSection("Security").GetSection("TokenSecret").Value;
             var key = Encoding.ASCII.GetBytes(
                 _config.GetSection("Security").GetSection("TokenSecret").Value);
             var tokenDescriptor = new SecurityTokenDescriptor
