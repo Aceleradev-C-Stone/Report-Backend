@@ -28,6 +28,7 @@ namespace Report.Tests.Helpers
 
         public Fakes()
         {
+            // Services
             DataFileNames.Add(typeof(User), $"TestData{Slash}Users.json");
             DataFileNames.Add(typeof(CreateUserRequest), $"TestData{Slash}Users.json");
             DataFileNames.Add(typeof(UpdateUserRequest), $"TestData{Slash}Users.json");
@@ -37,8 +38,13 @@ namespace Report.Tests.Helpers
             DataFileNames.Add(typeof(CreateLogRequest), $"TestData{Slash}Logs.json");
             DataFileNames.Add(typeof(UpdateLogRequest), $"TestData{Slash}Logs.json");
 
+            // Controllers
             DataFileNames.Add(typeof(Api.Dto.Requests.CreateUserRequest), $"TestData{Slash}Users.json");
             DataFileNames.Add(typeof(Api.Dto.Requests.UpdateUserRequest), $"TestData{Slash}Users.json");
+            DataFileNames.Add(typeof(Api.Dto.Requests.LoginUserRequest), $"TestData{Slash}Users.json");
+            DataFileNames.Add(typeof(Api.Dto.Requests.RegisterUserRequest), $"TestData{Slash}Users.json");
+            DataFileNames.Add(typeof(Api.Dto.Requests.CreateLogRequest), $"TestData{Slash}Logs.json");
+            DataFileNames.Add(typeof(Api.Dto.Requests.UpdateLogRequest), $"TestData{Slash}Logs.json");
             
             var configuration = new MapperConfiguration(cfg => 
             {

@@ -528,6 +528,39 @@ namespace Report.Tests.Services
         }
 
         [Fact]
+        public void Should_Return_Log_When_Create_With_Logged_User()
+        {
+            // Arrange
+            var loggedUserId = 1;
+            var fakes = new Fakes();
+            var fakeHttp = fakes.FakeHttpContextAccessor(false, loggedUserId).Object;
+            var fakeRepository = fakes.FakeLogRepository().Object;
+            var fakeUserRepository = fakes.FakeUserRepository().Object;
+            var hashService = new HashService();
+            var userService = new UserService(fakes.Mapper, fakeHttp, fakeUserRepository, hashService);
+
+            var request = fakes.Get<CreateLogRequest>().First();
+            var log = fakes.Get<Log>().First();
+
+            var response = fakes.Mapper.Map<LogResponse>(log);
+            response.Id = 999;  // Mocked id when creating a new log
+            response.Archived = false;  // By default, log is created as unarchived
+            response.UserId = loggedUserId;  // Should be created with logged user id
+
+            // Act
+            var service = new LogService(fakes.Mapper, fakeRepository, userService);
+            var actual = service.Create(request).Result;
+
+            response.CreatedAt = (actual.Data as LogResponse).CreatedAt;
+            var expected = Responses.OkResponse(null, response);
+
+            // Assert
+            Assert.IsType<Response>(actual);
+            Assert.NotNull(actual);
+            Assert.Equal(expected, actual, new LogResponseComparer());
+        }
+
+        [Fact]
         public void Should_Return_Log_When_Create_With_Manager()
         {
             // Arrange
