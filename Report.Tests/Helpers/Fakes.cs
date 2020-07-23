@@ -37,6 +37,9 @@ namespace Report.Tests.Helpers
             DataFileNames.Add(typeof(CreateLogRequest), $"TestData{Slash}Logs.json");
             DataFileNames.Add(typeof(UpdateLogRequest), $"TestData{Slash}Logs.json");
 
+            DataFileNames.Add(typeof(Api.Dto.Requests.CreateUserRequest), $"TestData{Slash}Users.json");
+            DataFileNames.Add(typeof(Api.Dto.Requests.UpdateUserRequest), $"TestData{Slash}Users.json");
+            
             var configuration = new MapperConfiguration(cfg => 
             {
                 cfg.AddProfile<AuthProfile>();
@@ -44,6 +47,8 @@ namespace Report.Tests.Helpers
                 cfg.AddProfile<LogProfile>();
                 cfg.CreateMap<User, UpdateUserRequest>();
                 cfg.CreateMap<Log, UpdateLogRequest>();
+
+                cfg.CreateMap<User, Api.Dto.Requests.UpdateUserRequest>();
             });
 
             this.Mapper = configuration.CreateMapper();
