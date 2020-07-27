@@ -1,4 +1,3 @@
-using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -6,8 +5,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Report.Api.Mappers;
 using Report.Core.Repositories;
@@ -39,9 +38,6 @@ namespace Report.Api
                         opt.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     });
                     
-            var key = Encoding.ASCII.GetBytes(
-                Configuration.GetSection("Security").GetSection("TokenSecret").Value);
-            
             services.AddAuthentication(cfg =>
             {
                 cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -51,19 +47,15 @@ namespace Report.Api
             {
                 cfg.RequireHttpsMetadata = false;
                 cfg.SaveToken = true;
-                cfg.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidateIssuer = false,
-                    ValidateAudience = false
-                };
+                cfg.TokenValidationParameters =
+                    TokenService.GetTokenValidationParameters(Configuration);
             });
 
             services.AddAutoMapper(
                 typeof(AuthProfile),
                 typeof(UserProfile),
-                typeof(LogProfile));
+                typeof(LogProfile)
+            );
                 
             services.AddHttpContextAccessor();
 

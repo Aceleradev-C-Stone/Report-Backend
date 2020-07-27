@@ -48,16 +48,7 @@ namespace Report.Infra.Services
         public bool IsValid(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(
-                _config.GetSection("Security").GetSection("TokenSecret").Value);
-            var parameters = new TokenValidationParameters()
-            {
-                ValidateAudience = false,
-                ValidateIssuer = false,
-                ValidateLifetime = true,
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                ValidateIssuerSigningKey = true,
-            };
+            var parameters = GetTokenValidationParameters(_config);
 
             try
             {
@@ -78,5 +69,18 @@ namespace Report.Infra.Services
         public int GetExpirationInSeconds() => SECONDS_TO_EXPIRE;
         public int GetExpirationInMinutes() => SECONDS_TO_EXPIRE / 60;
         public int GetExpirationInHours() => SECONDS_TO_EXPIRE / (60 * 60);
+
+        public static TokenValidationParameters GetTokenValidationParameters(IConfiguration config)
+        {
+            var key = Encoding.ASCII.GetBytes(
+                config.GetSection("Security").GetSection("TokenSecret").Value);
+            return new TokenValidationParameters()
+            {
+                ValidateAudience = false,
+                ValidateIssuer = false,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuerSigningKey = true,
+            };
+        }
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Moq;
-using Newtonsoft.Json;
 using Report.Api.Mappers;
 using Report.Core.Dto.Requests;
 using Report.Core.Enums;
@@ -20,32 +18,12 @@ namespace Report.Tests.Helpers
 {
     public class Fakes
     {
-        private Dictionary<Type, string> DataFileNames { get; } =
-            new Dictionary<Type, string>();
-        private string FileName<T>() { return DataFileNames[typeof(T)]; }
-
-        private char Slash = Path.DirectorySeparatorChar;   
+        private static DataFiles _data;
 
         public Fakes()
         {
-            // Services
-            DataFileNames.Add(typeof(User), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(CreateUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(UpdateUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(LoginUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(RegisterUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(Log), $"TestData{Slash}Logs.json");
-            DataFileNames.Add(typeof(CreateLogRequest), $"TestData{Slash}Logs.json");
-            DataFileNames.Add(typeof(UpdateLogRequest), $"TestData{Slash}Logs.json");
+            _data = new DataFiles();
 
-            // Controllers
-            DataFileNames.Add(typeof(Api.Dto.Requests.CreateUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(Api.Dto.Requests.UpdateUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(Api.Dto.Requests.LoginUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(Api.Dto.Requests.RegisterUserRequest), $"TestData{Slash}Users.json");
-            DataFileNames.Add(typeof(Api.Dto.Requests.CreateLogRequest), $"TestData{Slash}Logs.json");
-            DataFileNames.Add(typeof(Api.Dto.Requests.UpdateLogRequest), $"TestData{Slash}Logs.json");
-            
             var configuration = new MapperConfiguration(cfg => 
             {
                 cfg.AddProfile<AuthProfile>();
@@ -53,7 +31,6 @@ namespace Report.Tests.Helpers
                 cfg.AddProfile<LogProfile>();
                 cfg.CreateMap<User, UpdateUserRequest>();
                 cfg.CreateMap<Log, UpdateLogRequest>();
-
                 cfg.CreateMap<User, Api.Dto.Requests.UpdateUserRequest>();
             });
 
@@ -62,8 +39,7 @@ namespace Report.Tests.Helpers
 
         public List<T> Get<T>()
         {
-            string content = File.ReadAllText(FileName<T>());
-            return JsonConvert.DeserializeObject<List<T>>(content);
+            return _data.Get<T>();
         }
 
         public Mock<IUserRepository> FakeUserRepository()

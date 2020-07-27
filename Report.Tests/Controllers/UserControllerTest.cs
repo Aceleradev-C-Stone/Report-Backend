@@ -13,7 +13,7 @@ namespace Report.Tests.Controllers
     public class UserControllerTest
     {
         [Fact]
-        public void Should_Ok_When_Get_With_Manager()
+        public void Should_Return_Ok_When_Get_With_Manager()
         {
             // Arrange
             var fakes = new Fakes();
